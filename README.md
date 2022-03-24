@@ -1,2 +1,2 @@
 # MADS
-Food Sharing
+Food Sharing app
