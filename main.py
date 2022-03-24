@@ -20,7 +20,7 @@ r = requests.post(receiptOcrEndpoint, data = {   'client_id': 'TEST',        # U
   }, \
   files = {"file": open(imageFile, "rb")})
 
-# print(r.text) # result in JSON
+print(r.text) # result in JSON
 
 y = json.loads(r.text)
 
