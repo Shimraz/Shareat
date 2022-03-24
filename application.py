@@ -41,7 +41,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.core.window import WindowBase
 from kivy.graphics import Canvas, Translate, Fbo, ClearColor, ClearBuffers
  
-
+Window.size = (357, 667)
        
 KV = '''
 WindowManager:
@@ -75,7 +75,8 @@ WindowManager:
         play: True
     MDRectangleFlatButton:
         text: 'ON Camera'
-        on_press: camera.play #= not camera.play
+        pos_hint : {'center_x' : 0., 'center_y' : 0.2}
+        on_press: camera.play = not camera.play
         size_hint_y: None
         height: '48dp'
     MDRectangleFlatButton:
@@ -83,6 +84,12 @@ WindowManager:
         pos_hint : {'center_x' : 0.5, 'center_y' : 0.2}
         on_press: root.TakePicture()
         height: '48dp'
+    MDRectangleFlatButton:
+        text: "Go Back"
+        pos_hint : {'center_x' : 1.0, 'center_y' : 0.2}
+        on_release:
+            app.root.current = "main"
+            root.manager.transition.direction = "right"
 
 
 <SecondWindow>:
