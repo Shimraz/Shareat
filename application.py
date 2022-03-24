@@ -31,7 +31,6 @@ from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager,Screen
 from kivy.core.window import Window
-import random
 import time
 import requests
 import json
@@ -40,66 +39,111 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.core.window import WindowBase
 from kivy.graphics import Canvas, Translate, Fbo, ClearColor, ClearBuffers
+from kivy.utils import platform
+from kivy.base import EventLoop
+if platform == "android":
+  from android.permissions import request_permissions, Permission
+  request_permissions([Permission.CAMERA,Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+
  
-Window.size = (357, 667)
-       
+# Window.size = (357, 667)
+# Window.fullscreen = 'auto'
+      
 KV = '''
+# GridLayout:
+    # cols: 1
 WindowManager:
     MainWindow:
     SecondWindow:
     cameraWidget:
-
+  
+        
 <MainWindow>:
     name: "main"
     orientation : 'horizontal'
-    
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'icon.png'
     BoxLayout:         
     MDLabel:
         text: 'Please scan the receipt'
         halign: 'center'
-        pos_hint : {'center_x' : 0.5, 'center_y' : 0.85}
+        pos_hint : {'center_x' : 0.2, 'center_y' : 0.4}
         
     MDRectangleFlatButton:
         text: "Scan"
-        pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
+        pos_hint : {'center_x' : 0.7, 'center_y' : 0.4}
         on_release:
             app.root.current = "Cameras"
             root.manager.transition.direction = "left"
 
 <cameraWidget>:
-    name: "Cameras"
     orientation: 'vertical'
+    name: "Cameras"
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'icon.png'
     Camera:
         id: camera
-        resolution: (640, 480)
-        play: True
+        resolution: (1024, 1024)
+        play: False
     MDRectangleFlatButton:
         text: 'ON Camera'
-        pos_hint : {'center_x' : 0., 'center_y' : 0.2}
+        pos_hint : {'center_x' : 0.05, 'center_y' : 0.2}
         on_press: camera.play = not camera.play
         size_hint_y: None
         height: '48dp'
+    
     MDRectangleFlatButton:
         text: "Capture"
-        pos_hint : {'center_x' : 0.5, 'center_y' : 0.2}
-        on_press: root.TakePicture()
+        pos_hint : {'center_x' : 0.2, 'center_y' : 0.2}
+        on_press: 
+            root.TakePicture()
+            # root refers to <cameraWidget>
+            # app refers to TestCamera, app.root refers to the GridLayout: at the top
+            
         height: '48dp'
+    
     MDRectangleFlatButton:
         text: "Go Back"
-        pos_hint : {'center_x' : 1.0, 'center_y' : 0.2}
+        pos_hint : {'center_x' : 0.7, 'center_y' : 0.2}
         on_release:
             app.root.current = "main"
             root.manager.transition.direction = "right"
+    
+    MDRectangleFlatButton:
+        text: "Next"
+        pos_hint : {'center_x' : 0.95, 'center_y' : 0.2}
+        on_release:
+            root.manager.transition.direction = 'left'
+            app.root.current = "second"
 
 
 <SecondWindow>:
-    name: "second"
-
-    Button:
+    name : "second"
+    orientation : 'horizontal'
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'icon.png'
+    BoxLayout:
+    MDRectangleFlatButton:
         text: "Go Back"
+        pos_hint : {'center_x' : 0.5, 'center_y' : 0.2}
         on_release:
             app.root.current = "main"
             root.manager.transition.direction = "right"
+            
+    MDRectangleFlatButton:
+        id: btnExit
+        pos_hint : {'center_x' : 0.95, 'center_y' : 0.2}
+        text: "Exit"
+        on_press: app.close_application()
 
 
     
@@ -187,6 +231,7 @@ class MainWindow(Screen):
 
 
 class SecondWindow(Screen):
+    
     pass
 
 
@@ -242,6 +287,7 @@ class MADSApp(MDApp):
         self.sm = ScreenManager()
         self.sm.add_widget(MainWindow(name='main'))
         self.sm.add_widget(cameraWidget(name='Cameras'))
+        self.sm.add_widget(SecondWindow(name='second'))
         # screen = Screen()
         # self.theme_cls.theme_style = "Dark"
         # self.theme_cls.primary_palette = "Gray"
@@ -259,7 +305,21 @@ class MADSApp(MDApp):
     #     capture.export_to_png("IMG_{}.png".format(timestr))
     #     print("Captured")
     #     return True
+    def close_application(self):
+        # closing application
+        App.get_running_app().stop()
+        # removing window
+        Window.close()
+    #     self.reset()
     
+    # def reset(self):
+
+    #     if not EventLoop.event_listeners:
+    #         from kivy.cache import Cache
+    #         Window.Window = Window.core_select_lib('window', Window.Window_impl, True)
+    #         for cat in Cache._categories:
+    #             Cache._objects[cat] = {}
+            
     def func(self):
 
         receiptOcrEndpoint = 'https://ocr.asprise.com/api/v1/receipt' # Receipt OCR API endpoint
