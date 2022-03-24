@@ -15,7 +15,7 @@ import kivy
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.storage.jsonstore import JsonStore
-
+import receipt_parser_core
 
 # Replace this with your
 # current version
@@ -33,13 +33,20 @@ class MyFirstKivyApp(App):
         data.put("bananas", quantity=2)
         data.put("apples", quantity=4)
 
-        url = "https://api.mindee.net/v1/products/mindee/expense_receipts/v3/predict"
+        config = receipt_parser_core.read_config()
 
-        with open("receipt.png", "rb") as myfile:
-            files = {"document": myfile}
-            headers = {"Authorization": "Token 0239a53e8839c150bf8d3b71d5055c21"}
-            response = requests.post(url, files=files, headers=headers)
-            print(response.text)
+        receipt_files = receipt_parser_core.get_files_in_folder('data/txt')
+        stats = receipt_parser_core.ocr_receipts(config, receipt_files)
+        #receipt_parser_core.results_to_json(config, receipt_files)
+        receipt_parser_core.output_statistics(stats)
+
+        #url = "https://api.mindee.net/v1/products/mindee/expense_receipts/v3/predict"
+
+        #with open("receipt.png", "rb") as myfile:
+        #    files = {"document": myfile}
+        #    headers = {"Authorization": "Token 0239a53e8839c150bf8d3b71d5055c21"}
+        #    response = requests.post(url, files=files, headers=headers)
+        #    print(response.text)
 
         for key in data:
             print(key, ": ", data.get(key)['quantity'])
