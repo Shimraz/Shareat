@@ -285,9 +285,7 @@ class MADSApp(MDApp):
             name = de.split('x')[1].split('à')[0]
         #     name = name.split('à')[0]
             Table_items[name] = {'quantity':quantity}
-        
-
-
+    
 
 if __name__ == '__main__':
     mads = MADSApp()
