@@ -88,3 +88,73 @@ Screen:
             
         
 '''
+
+class MainApp(MDApp):
+    def __init__(self):
+        super().__init__()
+        self.kvs = Builder.load_string(KV)
+        self.user_score = 0
+        self.ai_score = 0
+
+    def build(self):
+        self.icon = 'assets/icon.png'
+        screen = Screen()
+        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.primary_palette = "Gray"
+        screen.add_widget(self.kvs)
+        return screen
+
+    def update_score(self, u, ai):
+        if u == ai:
+            self.ai_score += 0
+        if u.isspace() or u not in ['r', 'p', 's']:
+            quit()
+        elif u == 'p' and ai == 'p':
+            self.user_score += 0
+        elif u == 'r' and ai == 'r':
+            self.user_score += 0
+        elif u == 's' and ai == 's':
+            self.user_score += 0
+        elif u == 'p' and ai == 'r':
+            self.user_score += 1
+        elif u == 'r' and ai == 's':
+            self.user_score += 1
+        elif u == 'p' and ai == 'r':
+            self.user_score += 1
+        elif u == 's' and ai == 'p':
+            self.user_score += 1
+        else:
+            self.ai_score += 1
+        self.kvs.ids.your_points.text = "You: " + str(self.user_score)
+        self.kvs.ids.ai_points.text = "AI: " + str(self.ai_score)
+
+    def play(self, char):
+        x = char
+        user_move_filename = "assets/" + char + "L.png"
+        self.kvs.ids.user_move.source = user_move_filename
+
+        y = random.choice(['r', 'p', 's'])
+        ai_move_filename = "assets/" + y + "R.png"
+        self.kvs.ids.ai_move.source = ai_move_filename
+        self.update_score(x, y)
+
+    def reset_score(self):
+        self.user_score = 0
+        self.ai_score = 0
+        self.kvs.ids.your_points.text = "You: " + str(self.user_score)
+        self.kvs.ids.ai_points.text = "AI: " + str(self.ai_score)
+
+    def auto_play(self):
+        for i in range(1000):
+            x = random.choice(['r', 'p', 's'])
+            user_move_filename = "assets/" + x + "L.png"
+            self.kvs.ids.user_move.source = user_move_filename
+
+            y = random.choice(['r', 'p', 's'])
+            ai_move_filename = "assets/" + y + "R.png"
+            self.kvs.ids.ai_move.source = ai_move_filename
+            self.update_score(x, y)
+
+ma = MainApp()
+if __name__ == '__main__':
+    ma.run()
