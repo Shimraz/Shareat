@@ -1,2 +1,2 @@
-# MADS
+# SHAREAT
 Food Sharing app
