@@ -31,6 +31,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager,Screen
 from kivy.core.window import Window
+from kivy.properties import StringProperty
 import time
 import requests
 import json
@@ -48,7 +49,13 @@ if platform == "android":
  
 # Window.size = (357, 667)
 # Window.fullscreen = 'auto'
-      
+
+data = {'Latte Macchiato ': {'quantity': '2'},
+ 'Gloki': {'quantity': '1'},
+ 'Schweinschnitzel ': {'quantity': '1'},
+ 'Chässpätzli ': {'quantity': '1'}}
+
+     
 KV = '''
 # GridLayout:
     # cols: 1
@@ -145,7 +152,46 @@ WindowManager:
         text: "Exit"
         on_press: app.close_application()
 
+<DataLine>:  # class to hold one line of data
+    canvas:
+        Color:
+            rgb: .3, .3, .3
+        Line:
+            width: 2
+            rectangle: (*self.pos, *self.size)
+    size_hint_y: None
+    height: 48
+    Label:
+        text: root.name
+    Label:
+        text: root.color
+    Label:
+        text: root.birthday
 
+BoxLayout:
+    orientation: 'vertical'
+    Label:
+        size_hint_y: None
+        height: 48
+        text: 'Data List in a Scrollview Example'
+    BoxLayout:  # Headings for 
+        size_hint_y: None
+        height: 48
+        Label:
+            text: 'Name'
+        Label:
+            text: 'Favorite Color'
+        Label:
+            text: 'Birthday'
+    ScrollView:
+        do_scroll_y: True
+        bar_width: dp(10)
+        scroll_type: ['bars','content']
+        BoxLayout:
+            orientation: 'vertical'
+            id:scroll_box
+            size_hint_y: None
+            height: self.minimum_height
     
 '''
 
@@ -238,7 +284,10 @@ class SecondWindow(Screen):
 class WindowManager(ScreenManager):
     pass
 
-
+class DataLine(BoxLayout):  # class to hold one line of data
+    name = StringProperty()
+    color = StringProperty()
+    birthday = StringProperty()
 
 def export_to_png(self, filename, *args):
     '''Saves an image of the widget and its children in png format at the
@@ -319,7 +368,27 @@ class MADSApp(MDApp):
     #         Window.Window = Window.core_select_lib('window', Window.Window_impl, True)
     #         for cat in Cache._categories:
     #             Cache._objects[cat] = {}
-            
+    
+    def on_start(self):
+        info = [['Michael', 'Blue',     '1/30/2020'],  # simulating what could come out of a database
+                ['Carol',   'Green',    '12/3/2020'],
+                ['Bill',    'Red',      '3/12/2020'],
+                ['Sue',     'Orange',   '7/4/2020'],
+                ['John',    'Blue',     '5/23/2020'],
+                ['Jane',    'Yellow',   '3/9/2020'],
+                ['Michael', 'Blue',     '2/30/2020'],
+                ['Carol',   'Green',    '4/3/2020'],
+                ['Bill',    'Red',      '3/12/2020'],
+                ['Sue',     'Orange',   '8/4/2020'],
+                ['John',    'Blue',     '10/23/2020'],
+                ['Jane',    'Yellow',   '6/9/2020']]
+
+        for line in info:
+            name, color, bd = line
+            w = DataLine(name=name, color=color, birthday=bd)  # instancing the class
+            self.root.ids.scroll_box.add_widget(w)             # adding the class to the scrollview
+
+        
     def func(self):
 
         receiptOcrEndpoint = 'https://ocr.asprise.com/api/v1/receipt' # Receipt OCR API endpoint
