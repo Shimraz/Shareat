@@ -1,1 +1,1 @@
-{"bananas": {"quantity": 2}, "apples": {"quantity": 4}}
+{"bananas": {"quantity": 2}, "apples": {"quantity": 4}, "Latte Macchiato": {"price": 4.5, "quantity": 2.0, "currency": "CHF"}, "Gloki": {"price": 5.0, "quantity": 1.0, "currency": "CHF"}, "Schweinschnitzel": {"price": 22.0, "quantity": 1.0, "currency": "CHF"}, "Ch\u00e4ssp\u00e4tzli": {"price": 18.5, "quantity": 1.0, "currency": "CHF"}}
