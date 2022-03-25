@@ -41,6 +41,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.core.window import WindowBase
 from kivy.graphics import Canvas, Translate, Fbo, ClearColor, ClearBuffers
 from kivy.utils import platform
+from kivy.storage.jsonstore import JsonStore
 from kivy.base import EventLoop
 if platform == "android":
   from android.permissions import request_permissions, Permission
@@ -271,7 +272,10 @@ class cameraWidget(Screen):
     def TakePicture(self, *args):
         self.export_to_png = export_to_png
         timestr = time.strftime("%Y%m%d_%H%M%S")
-        self.export_to_png(self.ids.camera, filename="IMG_{}.png".format(timestr))
+        filename = "IMG_{}.png".format(timestr)
+        self.last_scan = filename
+        self.export_to_png(self.ids.camera, filename=filename)
+
 class MainWindow(Screen):
     pass
 
@@ -337,6 +341,7 @@ class MADSApp(MDApp):
         self.sm.add_widget(MainWindow(name='main'))
         self.sm.add_widget(cameraWidget(name='Cameras'))
         self.sm.add_widget(SecondWindow(name='second'))
+        self.data = JsonStore('data.json')
         # screen = Screen()
         # self.theme_cls.theme_style = "Dark"
         # self.theme_cls.primary_palette = "Gray"
@@ -391,37 +396,43 @@ class MADSApp(MDApp):
         
     def func(self):
 
-        receiptOcrEndpoint = 'https://ocr.asprise.com/api/v1/receipt' # Receipt OCR API endpoint
-        imageFile = "receipt.png" # // Modify this to use your own file if necessary
-        r = requests.post(receiptOcrEndpoint, data = {   'client_id': 'TEST',        # Use 'TEST' for testing purpose \
-          'recognizer': 'auto',       # can be 'US', 'CA', 'JP', 'SG' or 'auto' \
-          'ref_no': 'ocr_python_123', # optional caller provided ref code \
-          }, \
-          files = {"file": open(imageFile, "rb")})
-        
-        # print(r.text) # result in JSON
-        
-        
-        y = json.loads(r.text)
-        
-        items = y['receipts'][0]['items']
-        
-        des = []
-        for item in items:
-            des.append(item['description']) 
-        
-        print(des)
-        
-        
-        
-        # Get Name, quantity and cost 
-        Table_items = {}
-        for de in des:
-            quantity = de.split('x')[0]
-            name = de.split('x')[1].split('à')[0]
-        #     name = name.split('à')[0]
-            Table_items[name] = {'quantity':quantity}
-    
+        CLIENT_ID = "vrfV7PAu5YaeLRD4tjGnmtvTVTDtpZVdDyoePTU"
+        ENVIRONMENT_URL = "https://api.veryfi.com/"
+
+        username = "domenikmueller"
+        api_key = ""
+        process_file_url = '{0}api/v7/partner/documents/'.format(ENVIRONMENT_URL)
+        headers = {
+            "Accept": "application/json",
+            "CLIENT-ID": CLIENT_ID,
+            "AUTHORIZATION": "apikey {0}:{1}".format(username, api_key)
+        }
+
+        # file path and file name
+        file_name = self.sm.ids.camera.last_scan
+
+        # You can send the list of categories that is relevant to your case
+        # Veryfi will try to choose the best one that fits this document
+        categories = ["Office Expense", "Meals & Entertainment", "Utilities", "Automobile"]
+        payload = {
+            'file_name': file_name,
+            'categories': categories
+        }
+
+        files = {'file': ('file', open(file_name, 'rb'), 'image/png')}
+        response = requests.post(url=process_file_url, headers=headers, data=payload, files=files)
+        print(response.json())
+        currency = "EUR"
+        if response.json()['currency_code']:
+            currency = response.json()['currency_code']
+
+        if response.json()['line_items']:
+            for item in response.json()['line_items']:
+                self.data.put(item['description'], price=item['price'], quantity=item['quantity'], currency=currency)
+
+        for key in self.data:
+            print(key, ": ", data.get(key)['quantity'])
+
 
 if __name__ == '__main__':
     mads = MADSApp()
