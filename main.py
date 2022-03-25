@@ -286,7 +286,7 @@ class cameraWidget(Screen):
         ENVIRONMENT_URL = "https://api.veryfi.com/"
 
         username = "domenikmueller"
-        api_key = "9bac9fbb0efdfc5951cd72a7884e0ea5"
+        api_key = ""
         process_file_url = '{0}api/v7/partner/documents/'.format(ENVIRONMENT_URL)
         headers = {
             "Accept": "application/json",
